@@ -23,12 +23,25 @@ final class MenuBarController {
         control.autosaveName = "TuckControl"
         control.menu = buildMenu()
 
+        // macOS persists per-autosaveName visibility. If an item was ever
+        // dropped for lack of room (common on notched displays) it stays
+        // invisible forever unless we assert it on every launch.
+        divider.isVisible = true
+        control.isVisible = true
+
         // ⌥⌘B
         hotkey = Hotkey(keyCode: 11, modifiers: [.option, .command]) { [weak self] in
             self?.toggle()
         }
 
         applyState()
+
+        if ProcessInfo.processInfo.environment["TUCK_DEBUG"] != nil {
+            for (name, item) in [("divider", divider), ("control", control)] {
+                print("\(name): visible=\(item.isVisible) length=\(item.length) button=\(item.button != nil)")
+            }
+            print("hotkey registered: \(hotkey != nil)")
+        }
     }
 
     @objc private func toggle() {

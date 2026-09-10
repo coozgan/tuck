@@ -27,6 +27,23 @@ and ad-hoc signs it.
 
 Right-click the control for the menu: toggle, *Launch at Login*, quit.
 
+## Troubleshooting
+
+**Icons don't appear.** macOS remembers per-item visibility and will silently
+drop a new status item when the menu bar is full — very common on notched
+MacBooks. Reset Tuck's saved state:
+
+```sh
+defaults delete app.tuck.Tuck
+killall Tuck; make run
+```
+
+**See what the app thinks is happening:**
+
+```sh
+TUCK_DEBUG=1 ./.build/release/Tuck
+```
+
 ## How it works
 
 macOS gives no public API to hide another app's status item. Tuck uses the
