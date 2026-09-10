@@ -22,6 +22,8 @@ and ad-hoc signs it.
 
 1. Two icons appear in your menu bar: a **divider** (`|`) and the **Tuck control** (`‹›`).
 2. `⌘`-drag the divider so that every item you want hidden sits to its **left**.
+   *Hold `⌘` down first, then press and drag* — clicking before holding `⌘` just
+   toggles the item. Control Center and the clock can't be moved by any app.
 3. Click the control (or press `⌥⌘B`) to collapse everything left of the divider.
 4. Click again to bring them back.
 
