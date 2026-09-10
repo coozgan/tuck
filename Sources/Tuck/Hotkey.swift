@@ -24,12 +24,11 @@ final class Hotkey {
         id = Hotkey.nextID
         Hotkey.nextID += 1
 
-        var hotKeyID = EventHotKeyID(signature: OSType(0x54_55_43_4B), id: id) // 'TUCK'
+        let hotKeyID = EventHotKeyID(signature: OSType(0x54_55_43_4B), id: id) // 'TUCK'
         let status = RegisterEventHotKey(keyCode, modifiers.rawValue, hotKeyID, GetEventDispatcherTarget(), 0, &ref)
         guard status == noErr else { return nil }
 
         Hotkey.handlers[id] = action
-        _ = hotKeyID
     }
 
     deinit {

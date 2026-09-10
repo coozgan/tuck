@@ -19,13 +19,8 @@ final class MenuBarController {
         divider.autosaveName = "TuckDivider"
         divider.button?.target = self
         divider.button?.action = #selector(toggle)
-        divider.button?.imagePosition = .imageOnly
 
         control.autosaveName = "TuckControl"
-        control.button?.image = NSImage(
-            systemSymbolName: "chevron.left.chevron.right",
-            accessibilityDescription: "Tuck"
-        )
         control.menu = buildMenu()
 
         // ⌥⌘B
@@ -40,15 +35,36 @@ final class MenuBarController {
         isHidden.toggle()
     }
 
+    /// Symbols can fail to load (missing SF Symbol, older OS). Falling back to
+    /// a title keeps the item visible — a variableLength item with neither
+    /// image nor title collapses to zero width and looks like a crash.
+    private func setIcon(_ item: NSStatusItem, symbol: String, fallback: String, description: String) {
+        guard let button = item.button else { return }
+        if let image = NSImage(systemSymbolName: symbol, accessibilityDescription: description) {
+            image.isTemplate = true
+            button.image = image
+            button.title = ""
+        } else {
+            button.image = nil
+            button.title = fallback
+        }
+    }
+
     private func applyState() {
-        divider.length = isHidden ? expandedLength : NSStatusItem.variableLength
-        divider.button?.image = isHidden
-            ? nil
-            : NSImage(systemSymbolName: "line.3.vertical", accessibilityDescription: "Divider")
-        control.button?.image = NSImage(
-            systemSymbolName: isHidden ? "chevron.right" : "chevron.left",
-            accessibilityDescription: isHidden ? "Show items" : "Hide items"
-        )
+        if isHidden {
+            divider.length = expandedLength
+            divider.button?.image = nil
+            divider.button?.title = ""
+        } else {
+            divider.length = NSStatusItem.variableLength
+            setIcon(divider, symbol: "line.3.vertical", fallback: "|", description: "Divider")
+        }
+
+        setIcon(control,
+                symbol: isHidden ? "chevron.right" : "chevron.left",
+                fallback: isHidden ? "›" : "‹",
+                description: isHidden ? "Show items" : "Hide items")
+
         menuItem(tag: 1)?.title = isHidden ? "Show Items" : "Hide Items"
     }
 
@@ -71,11 +87,16 @@ final class MenuBarController {
         loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(loginItem)
 
-        menu.addItem(withTitle: "Tip: ⌘-drag the divider to choose which items hide",
-                     action: nil, keyEquivalent: "").isEnabled = false
+        let tip = NSMenuItem(title: "Tip: ⌘-drag the divider to choose which items hide",
+                             action: nil, keyEquivalent: "")
+        tip.isEnabled = false
+        menu.addItem(tip)
 
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Quit Tuck", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+
+        let quit = NSMenuItem(title: "Quit Tuck", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quit.target = NSApp
+        menu.addItem(quit)
 
         return menu
     }
