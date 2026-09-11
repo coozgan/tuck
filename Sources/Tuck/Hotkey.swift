@@ -1,16 +1,9 @@
 import AppKit
 import Carbon.HIToolbox
 
-/// Minimal global hotkey via Carbon. Works without Accessibility permission.
+/// Minimal global hotkey via Carbon. Works without Accessibility permission,
+/// unlike NSEvent.addGlobalMonitorForEvents.
 final class Hotkey {
-    struct Modifiers: OptionSet {
-        let rawValue: UInt32
-        static let command = Modifiers(rawValue: UInt32(cmdKey))
-        static let option = Modifiers(rawValue: UInt32(optionKey))
-        static let control = Modifiers(rawValue: UInt32(controlKey))
-        static let shift = Modifiers(rawValue: UInt32(shiftKey))
-    }
-
     private static var handlers: [UInt32: () -> Void] = [:]
     private static var nextID: UInt32 = 1
     private static var eventHandler: EventHandlerRef?
@@ -18,14 +11,14 @@ final class Hotkey {
     private var ref: EventHotKeyRef?
     private let id: UInt32
 
-    init?(keyCode: UInt32, modifiers: Modifiers, action: @escaping () -> Void) {
+    init?(keyCode: UInt32, modifiers: UInt32, action: @escaping () -> Void) {
         Hotkey.installEventHandlerIfNeeded()
 
         id = Hotkey.nextID
         Hotkey.nextID += 1
 
         let hotKeyID = EventHotKeyID(signature: OSType(0x54_55_43_4B), id: id) // 'TUCK'
-        let status = RegisterEventHotKey(keyCode, modifiers.rawValue, hotKeyID, GetEventDispatcherTarget(), 0, &ref)
+        let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetEventDispatcherTarget(), 0, &ref)
         guard status == noErr else { return nil }
 
         Hotkey.handlers[id] = action
